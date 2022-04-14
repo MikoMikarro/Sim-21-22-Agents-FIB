@@ -332,8 +332,7 @@ to get-cure
 
 end
 to wander
-  right ((random 90) - 45)
-  forward 1
+  move-to one-of neighbors with [block? = false]
 end
 
 to-report human-p-valids
@@ -438,7 +437,7 @@ to-report A* [#Start #Goal #valid-map]
         ; and deactivate it, because its children will be computed right now
         set active? false
         ; Compute its valid neighbors
-        let valid-neighbors patches in-radius 1 with [member? self #valid-map]
+        let valid-neighbors neighbors with [member? self #valid-map]
         ask valid-neighbors
         [
           ; There are 2 types of valid neighbors:
@@ -581,7 +580,7 @@ initial-wall-density
 initial-wall-density
 0
 1
-0.98
+0.13
 0.01
 1
 NIL
