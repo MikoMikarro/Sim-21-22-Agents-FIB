@@ -37,7 +37,6 @@ to setup
   reset-ticks
 
   ; UI interface
-  resize-world 0 48 0 48
   set-patch-size 12
 
   ask patches
@@ -71,7 +70,7 @@ to setup
   create-cures 1[
     set size 1
     set shape "circle"
-    let ppp  one-of patches with [not block?]
+    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 0 and pycor = 0]) > safeRadius)]
     setxy [pxcor] of ppp [pycor] of ppp
     set color blue
   ]
@@ -81,7 +80,7 @@ to setup
     set size 2
     set shape "person"
     ;let ppp  one-of patches with [not block?]
-    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 24 and pycor = 24]) <= safeRadius)]
+    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 0 and pycor = 0]) <= (0.75 * safeRadius))]
     setxy [pxcor] of ppp [pycor] of ppp
     set color blue
   ]
@@ -90,7 +89,7 @@ to setup
     set shape "person"
     set color red - 1.8
     ;setxy random-xcor random-ycor
-    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 24 and pycor = 24]) > safeRadius)]
+    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 0 and pycor = 0]) > safeRadius)]
     setxy [pxcor] of ppp [pycor] of ppp
   ]
 
@@ -448,7 +447,7 @@ to-report A* [#Start #Goal #valid-map]
         ; and deactivate it, because its children will be computed right now
         set active? false
         ; Compute its valid neighbors
-        let valid-neighbors neighbors with [member? self #valid-map]
+        let valid-neighbors neighbors4 with [member? self #valid-map]
         ask valid-neighbors
         [
           ; There are 2 types of valid neighbors:
@@ -491,7 +490,7 @@ to-report A* [#Start #Goal #valid-map]
     let current #Goal
     set Final-Cost (precision [Cost-path] of #Goal 3)
     let rep (list current)
-    While [current != #Start]
+    While [current != #Start and current != nobody]
     [
       set current [father] of current
       set rep fput current rep
@@ -505,9 +504,9 @@ to-report A* [#Start #Goal #valid-map]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-243
+254
 10
-839
+850
 607
 -1
 -1
@@ -521,10 +520,10 @@ GRAPHICS-WINDOW
 1
 1
 1
-0
-48
-0
-48
+-24
+24
+-24
+24
 1
 1
 1
@@ -549,10 +548,10 @@ NIL
 1
 
 BUTTON
+49
 51
-53
-114
-86
+112
+84
 go
 go
 T
@@ -566,11 +565,11 @@ NIL
 1
 
 BUTTON
-52
-92
-144
-125
-fog-of-war
+49
+89
+183
+122
+Toggle Fog of War
 toggle-fow
 NIL
 1
@@ -583,10 +582,10 @@ NIL
 1
 
 SLIDER
-53
-161
-225
-194
+48
+130
+220
+163
 initial-wall-density
 initial-wall-density
 0
@@ -598,10 +597,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-52
-125
-131
-158
+123
+51
+202
+84
 go_once
 go
 NIL
@@ -615,10 +614,10 @@ NIL
 1
 
 SLIDER
-53
-197
-225
-230
+47
+169
+219
+202
 human-sight
 human-sight
 1
@@ -630,10 +629,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-38
-291
-142
-336
+37
+475
+141
+520
 Zombies
 count zombies
 17
@@ -641,10 +640,10 @@ count zombies
 11
 
 MONITOR
-38
-237
-140
-282
+37
+425
+139
+470
 Humans
 count humans
 17
@@ -652,10 +651,10 @@ count humans
 11
 
 SLIDER
-19
-346
-209
-379
+48
+253
+238
+286
 humans-initial-number
 humans-initial-number
 0
@@ -667,25 +666,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
-383
-218
-416
+37
+291
+238
+324
 zombies-initial-number
 zombies-initial-number
 0
 30
-0.0
+8.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-19
-429
-191
-462
+38
+342
+210
+375
 safeRadius
 safeRadius
 1
@@ -697,15 +696,30 @@ NIL
 HORIZONTAL
 
 SWITCH
-73
-592
-176
-625
+38
+379
+141
+412
 limits?
 limits?
 1
 1
 -1000
+
+SLIDER
+47
+208
+219
+241
+zombie-sight
+zombie-sight
+1
+10
+3.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -734,6 +748,8 @@ El modelo simula las probabilidades que tienen los humanos de sobrevivir frente 
 
 Cuanto mayor sea el número de humanos y zombies más lenta irá la simulación.
 Si la densidad de paredes es demasiado alta, se corre el riesgo de que la alguno de los agentes quede aislado del resto y no pueda completarse la simulación correctamente.
+
+El mapa tiene que estar configurado para tener el origen en el centro, así los humanos aparecen en el centro.
 
 ## THINGS TO TRY
 
