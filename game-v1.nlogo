@@ -6,6 +6,8 @@ globals [
   Final-Cost ; The final cost of the path given by A*
 
   any-cured? ; Checks if any human is cured
+
+  total_distance ; Distance of all the humans to cure
 ]
 
 breed [humans human]
@@ -15,6 +17,7 @@ breed [cures cure]
 humans-own[
   cured?     ; If a human is cured, it is invisible to zombies and can cure other humans
   changing? ; if changing > 0, human will become a zombie, when changing? == 3, human becomes a zombie
+  distance_to_cure ; Self explained
 ]
 
 patches-own [
@@ -30,6 +33,7 @@ patches-own [
              ; we must consider it because its children have not been explored
   block?     ; If true, it's a wall
   safe?      ; If true, no zombies are close
+  border_wall?; Self explained
 ]
 
 to setup
@@ -47,6 +51,7 @@ to setup
     set visited? false
     set active? false
     set block? false
+    set border_wall? false
 
     ; Initial values of fogwar
     set visited_once? false
@@ -60,10 +65,12 @@ to setup
   setup-random-walls
   if limits? [
 
-    ask patches with [pxcor = min-pxcor or pxcor = max-pxcor or pycor = min-pycor or pycor = max-pycor] [
+    ask patches with [pxcor = min-pxcor or pxcor = max-pxcor or pycor = min-pycor or pycor = max-pycor or
+    pxcor = (min-pxcor + 1) or pxcor = (max-pxcor - 1) or pycor = (min-pycor + 1) or pycor = ( max-pycor - 1 )] [
       set block? True
       set pcolor brown
       set real-color brown
+      set border_wall? True
     ]
   ]
 
@@ -132,6 +139,10 @@ to go
     zombie-behaviour
   ]
 
+  if any? humans[
+    set total_distance mean [distance_to_cure] of humans
+  ]
+
   tick
 
 end
@@ -176,15 +187,14 @@ end
 
 to zombie-behaviour
 
-  let zombie_view 10
   let on-visible-patch = patch xcor ycor visible?
   set Start patch xcor ycor
-  let targets humans with [distance myself < zombie_view and cured? = false]
+  let targets humans with [distance myself < zombie-sight and cured? = false]
   let path false
 
   ask targets [
     let Goal patch xcor ycor
-    set p-valids patches with [distance myself < zombie_view and block? = false]
+    set p-valids patches with [distance myself < zombie-sight and block? = false]
     ifelse Start != Goal [
       set path A* Start Goal p-valids
 
@@ -251,7 +261,7 @@ to human-behaviour
       set changing? (changing? + 1)
     ]
   ]
-  [;else
+  [;else Normal behaviour
 
     let moved false
     ifelse not any-cured?[
@@ -273,8 +283,9 @@ to human-behaviour
           ]
         ]
       ]
-
+      set distance_to_cure distance cure-patch
       if [visible?] of cure-patch [
+
         set Start patch xcor ycor
         let Goal cure-patch
         let p-valid human-p-valids
@@ -282,7 +293,7 @@ to human-behaviour
         let path A* Start Goal p-valid
 
         if (path != false) and (length path > 1)[
-          set heading towards item 1 path
+          move-to (item 1 path)
           forward 1
           set moved true
         ]
@@ -337,6 +348,7 @@ to get-cure
   set cured? true
   set any-cured? true
   set changing? 0
+  set distance_to_cure 0
   ask cures [ die ]
 
 end
@@ -345,7 +357,20 @@ to wander
 end
 
 to-report human-p-valids
-  report patches with [(safe? = true and (visible? = true and block? = false) and (visited_once? = true and block? = false)) or (visible? = false)]
+  report patches with [
+    (
+      safe? = true
+      and
+      (
+        visible? = true and block? = false)
+      and
+      (visited_once? = true and block? = false)
+    )
+    or
+    (visible? = false)
+    and
+    border_wall? = false
+  ]
 end
 
 to create-map
@@ -365,12 +390,16 @@ to toggle-fow
     [ show-turtle ]
   ] [
     set fog-of-war? true
-    ask patches [
-      if not visible?
-      [ set pcolor black ]
+    ask humans  [
+      view human-sight true
     ]
     ask zombies
-    [ hide-turtle ]
+    [
+      let on-visible-patch = patch xcor ycor visible?
+      ifelse on-visible-patch
+      [ show-turtle ]
+      [ hide-turtle ]
+    ]
   ]
 end
 
@@ -379,7 +408,6 @@ to setup-random-walls
         if random-float 1.0 < initial-wall-density [
             wall-birth
         ]
-
     ]
 end
 
@@ -504,9 +532,9 @@ to-report A* [#Start #Goal #valid-map]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-254
+302
 10
-850
+898
 607
 -1
 -1
@@ -582,15 +610,15 @@ NIL
 1
 
 SLIDER
-48
-130
-220
-163
+10
+134
+182
+167
 initial-wall-density
 initial-wall-density
 0
 1
-0.13
+0.04
 0.01
 1
 NIL
@@ -614,12 +642,94 @@ NIL
 1
 
 SLIDER
-47
-169
-219
-202
+9
+173
+181
+206
 human-sight
 human-sight
+1
+10
+9.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+243
+433
+297
+478
+Zombies
+count zombies
+17
+1
+11
+
+MONITOR
+242
+369
+294
+414
+Humans
+count humans
+17
+1
+11
+
+SLIDER
+9
+250
+199
+283
+humans-initial-number
+humans-initial-number
+0
+30
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+10
+288
+211
+321
+zombies-initial-number
+zombies-initial-number
+0
+30
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+11
+328
+183
+361
+safeRadius
+safeRadius
+5
+20
+11.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+9
+212
+181
+245
+zombie-sight
+zombie-sight
 1
 10
 2.0
@@ -628,112 +738,50 @@ human-sight
 NIL
 HORIZONTAL
 
-MONITOR
-37
-475
-141
-520
-Zombies
-count zombies
-17
-1
+PLOT
 11
-
-MONITOR
-37
-425
-139
-470
-Humans
-count humans
-17
-1
-11
-
-SLIDER
-48
-253
-238
-286
-humans-initial-number
-humans-initial-number
-0
-30
-30.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-37
-291
-238
-324
-zombies-initial-number
-zombies-initial-number
-0
-30
-8.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-38
-342
-210
-375
-safeRadius
-safeRadius
-1
-20
-20.0
-1
-1
-NIL
-HORIZONTAL
+368
+234
+488
+plot 1
+time
+Mean Distance to Cure
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot total_distance"
 
 SWITCH
-38
-379
-141
-412
+186
+134
+276
+167
 limits?
 limits?
-1
+0
 1
 -1000
-
-SLIDER
-47
-208
-219
-241
-zombie-sight
-zombie-sight
-1
-10
-3.0
-1
-1
-NIL
-HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
 
 El modelo simula las probabilidades que tienen los humanos de sobrevivir frente a un ataque de zombies y encontrar la cura antes de que todos los humanos sean convertidos en zombies.
 
+
 ## HOW IT WORKS
 
-- Los zombies buscan y persiguen a los humanos para luego convertirlos en zombies.
-- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies.
+- Los zombies se mueven de aleatorio hasta que ven a un humano y lo persiguen  para luego convertirlo en zombies.
+- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies y les permite curar a otros humanos.
+- Se puede evaluar claramente el progreso de la obtención de la cura en el gráfico
 
 ## HOW TO USE IT
 
-1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros y campo de visión de los humanos.
+1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros ,campo de visión de los humanos, zombies, existencia de muralla exterior y radio de aparición de los humanos.
 2- Pulsar el botón "Setup" para que se recarguen los parámetros de la simulación y se apliquen las modificaciones de los parámetros realizadas previamente.
 3- Pulsar el botón "go" para que la simulación se ejecute hasta que todos los humanos se conviertan en zombies o se vuelvan inmunes con la cura.
 (NOTA: pulsando el botón "go_once" se puede hacer que la simulación avance haciendo un solo tick cada vez que se pulse.
@@ -741,8 +789,11 @@ El modelo simula las probabilidades que tienen los humanos de sobrevivir frente 
 
 - initial-wall-density: Deslizador que puede tener valores entre 0 y 1, con un aumento de 0.01. Establece la cantidad de paredes que habrá en el mapa que entorpecerán los movimientos de los humanos y zombies.
 - Human-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los humanos.
+- zombie-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los humanos.
 - humans-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de humanos que habrá al inicio de la simulación.
 - zombies-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de zombies que habrá al inicio de la simulación.
+- limits? : Interruptor que indica si hay o no borde exterior
+- safeRadious : Número entre 5 y 10 que indica a qué distancia del centro están los humanos
 
 ## THINGS TO NOTICE
 
@@ -751,10 +802,15 @@ Si la densidad de paredes es demasiado alta, se corre el riesgo de que la alguno
 
 El mapa tiene que estar configurado para tener el origen en el centro, así los humanos aparecen en el centro.
 
+Los humanos no escapan directamente de los zombies, cuando hacen path planning consideran peligrosos las casillas en las que hay zombies cerca
+
 ## THINGS TO TRY
 
-- Variar la visibilidad de los humanos, para ver la probabilidad que tienen de sobrevivir en distintos escenarios.
+- Variar la visibilidad de los humanos y zombies, para ver la probabilidad que tienen de sobrevivir en distintos escenarios.
+
 - Variar la densidad de paredes que haya en el mapa afecta a lo rápido que los humanos encuentran la cura.
+
+- Activar o desactivar el borde
 
 ## EXTENDING THE MODEL
 
@@ -764,17 +820,18 @@ El mapa tiene que estar configurado para tener el origen en el centro, así los 
 
 - Sería interesante que los humanos utilizaran algoritmos exploratorios en vez moverse de manera aleatoria
 
+- Mejorar la generación de terreno para crear edificios y casas
+
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+- Usamos patches-ahead para simular raytracing para un modelo más realusta de visualización
 
-## RELATED MODELS
+- Para evitar que los personajes se muevan en diagonal, usamos neighbors4 en vez de neighbors en el algoritmo A*
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+- A* Solver: http://www.cs.us.es/~fsancho/?e=131
 @#$#@#$#@
 default
 true
