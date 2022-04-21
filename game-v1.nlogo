@@ -6,7 +6,6 @@ globals [
   Final-Cost ; The final cost of the path given by A*
 
   any-cured? ; Checks if any human is cured
-
 ]
 
 breed [humans human]
@@ -60,6 +59,14 @@ to setup
   ; Random colored map
   create-map
   setup-random-walls
+  if limits? [
+
+    ask patches with [pxcor = min-pxcor or pxcor = max-pxcor or pycor = min-pycor or pycor = max-pycor] [
+      set block? True
+      set pcolor brown
+      set real-color brown
+    ]
+  ]
 
   create-cures 1[
     set size 1
@@ -73,7 +80,8 @@ to setup
     set cured? false
     set size 2
     set shape "person"
-    let ppp  one-of patches with [not block?]
+    ;let ppp  one-of patches with [not block?]
+    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 24 and pycor = 24]) <= safeRadius)]
     setxy [pxcor] of ppp [pycor] of ppp
     set color blue
   ]
@@ -82,7 +90,7 @@ to setup
     set shape "person"
     set color red - 1.8
     ;setxy random-xcor random-ycor
-    let ppp  one-of patches with [not block?]
+    let ppp  one-of patches with [not block? and (distance (one-of patches with[pxcor = 24 and pycor = 24]) > safeRadius)]
     setxy [pxcor] of ppp [pycor] of ppp
   ]
 
@@ -128,6 +136,8 @@ to go
   tick
 
 end
+
+
 
 ; view algorithm. Inputs:
 ;   - view-range : patches it sees
@@ -329,8 +339,8 @@ to get-cure
   set any-cured? true
   set changing? 0
   ask cures [ die ]
-end
 
+end
 to wander
   move-to one-of neighbors with [block? = false]
 end
@@ -370,6 +380,7 @@ to setup-random-walls
         if random-float 1.0 < initial-wall-density [
             wall-birth
         ]
+
     ]
 end
 
@@ -398,6 +409,8 @@ end
 ; Returns:
 ;   - If there is a path : list of the agents of the path.
 ;   - Otherwise          : false
+
+
 to-report A* [#Start #Goal #valid-map]
   ; clear all the information in the agents
   ask #valid-map
@@ -478,9 +491,9 @@ to-report A* [#Start #Goal #valid-map]
     let current #Goal
     set Final-Cost (precision [Cost-path] of #Goal 3)
     let rep (list current)
-    While [current != #Start and current != nobody]
+    While [current != #Start]
     [
-      set current [father] of current ;zzz
+      set current [father] of current
       set rep fput current rep
     ]
     report rep
@@ -610,7 +623,7 @@ human-sight
 human-sight
 1
 10
-4.0
+2.0
 1
 1
 NIL
@@ -647,7 +660,7 @@ humans-initial-number
 humans-initial-number
 0
 30
-8.0
+30.0
 1
 1
 NIL
@@ -662,11 +675,37 @@ zombies-initial-number
 zombies-initial-number
 0
 30
-1.0
+0.0
 1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+19
+429
+191
+462
+safeRadius
+safeRadius
+1
+20
+20.0
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+73
+592
+176
+625
+limits?
+limits?
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -675,34 +714,26 @@ El modelo simula las probabilidades que tienen los humanos de sobrevivir frente 
 
 ## HOW IT WORKS
 
-- Los zombies se mueven aleatoriamente y si encuentran a algún humano lo persiguen para luego convertirlo en zombie.
-- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies y además l.
+- Los zombies buscan y persiguen a los humanos para luego convertirlos en zombies.
+- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies.
 
 ## HOW TO USE IT
 
-1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros, campo de visión de los humanos,zombies y marcar si en el mapa tiene borde o no alrededor del mapa (mapa cerrado).
+1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros y campo de visión de los humanos.
 2- Pulsar el botón "Setup" para que se recarguen los parámetros de la simulación y se apliquen las modificaciones de los parámetros realizadas previamente.
 3- Pulsar el botón "go" para que la simulación se ejecute hasta que todos los humanos se conviertan en zombies o se vuelvan inmunes con la cura.
-(NOTA: pulsando el botón "go_once" se puede hacer que la simulación avance haciendo un solo tick cada vez que se pulse.)
+(NOTA: pulsando el botón "go_once" se puede hacer que la simulación avance haciendo un solo tick cada vez que se pulse.
 
 
 - initial-wall-density: Deslizador que puede tener valores entre 0 y 1, con un aumento de 0.01. Establece la cantidad de paredes que habrá en el mapa que entorpecerán los movimientos de los humanos y zombies.
-
 - Human-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los humanos.
-
-- zombie-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los zombies.
-
 - humans-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de humanos que habrá al inicio de la simulación.
-
 - zombies-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de zombies que habrá al inicio de la simulación.
 
 ## THINGS TO NOTICE
 
 Cuanto mayor sea el número de humanos y zombies más lenta irá la simulación.
-
 Si la densidad de paredes es demasiado alta, se corre el riesgo de que la alguno de los agentes quede aislado del resto y no pueda completarse la simulación correctamente.
-
-Si hay una gran cantidad de humanos es posible que NetLogo sea incapaz de procesar la planicifación de trayectoria de todos y se bloquee
 
 ## THINGS TO TRY
 
@@ -715,18 +746,15 @@ Un posible caso donde los humanos puedan defenderse de los zombies con cierta pr
 
 ## NETLOGO FEATURES
 
-- In function view we used patch-ahead to simuluate ray-tracing as we wanted to have a realistic model for the sight of the humans. Zombies don't use this system because we wanted to simulate that they can "hear"
+(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
 
 ## RELATED MODELS
 
-- Virus.nlogo
-- Vision Cone.nlogo
-- Random Grid Walk.nlogo
-- One Turtle Per Patch.nlogo
+(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
-- A* Path Plan: http://www.cs.us.es/~fsancho/?e=131
+(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
