@@ -675,26 +675,34 @@ El modelo simula las probabilidades que tienen los humanos de sobrevivir frente 
 
 ## HOW IT WORKS
 
-- Los zombies buscan y persiguen a los humanos para luego convertirlos en zombies.
-- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies.
+- Los zombies se mueven aleatoriamente y si encuentran a algún humano lo persiguen para luego convertirlo en zombie.
+- Los humanos escapan de los zombies mientras buscan la cura que los hace inmunes a convertirse en zombies y además l.
 
 ## HOW TO USE IT
 
-1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros y campo de visión de los humanos.
+1- Ajustar los parámetros de cantidad de humanos, cantidad de zombies, densidad de muros, campo de visión de los humanos,zombies y marcar si en el mapa tiene borde o no alrededor del mapa (mapa cerrado).
 2- Pulsar el botón "Setup" para que se recarguen los parámetros de la simulación y se apliquen las modificaciones de los parámetros realizadas previamente.
 3- Pulsar el botón "go" para que la simulación se ejecute hasta que todos los humanos se conviertan en zombies o se vuelvan inmunes con la cura.
-(NOTA: pulsando el botón "go_once" se puede hacer que la simulación avance haciendo un solo tick cada vez que se pulse.
+(NOTA: pulsando el botón "go_once" se puede hacer que la simulación avance haciendo un solo tick cada vez que se pulse.)
 
 
 - initial-wall-density: Deslizador que puede tener valores entre 0 y 1, con un aumento de 0.01. Establece la cantidad de paredes que habrá en el mapa que entorpecerán los movimientos de los humanos y zombies.
+
 - Human-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los humanos.
+
+- zombie-sight: Deslizazor que puede tener valores entre 1 y 10, con un aumento de 1. Establece el radio del campo de visión de los zombies.
+
 - humans-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de humanos que habrá al inicio de la simulación.
+
 - zombies-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de zombies que habrá al inicio de la simulación.
 
 ## THINGS TO NOTICE
 
 Cuanto mayor sea el número de humanos y zombies más lenta irá la simulación.
+
 Si la densidad de paredes es demasiado alta, se corre el riesgo de que la alguno de los agentes quede aislado del resto y no pueda completarse la simulación correctamente.
+
+Si hay una gran cantidad de humanos es posible que NetLogo sea incapaz de procesar la planicifación de trayectoria de todos y se bloquee
 
 ## THINGS TO TRY
 
@@ -707,15 +715,18 @@ Un posible caso donde los humanos puedan defenderse de los zombies con cierta pr
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+- In function view we used patch-ahead to simuluate ray-tracing as we wanted to have a realistic model for the sight of the humans. Zombies don't use this system because we wanted to simulate that they can "hear"
 
 ## RELATED MODELS
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+- Virus.nlogo
+- Vision Cone.nlogo
+- Random Grid Walk.nlogo
+- One Turtle Per Patch.nlogo
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+- A* Path Plan: http://www.cs.us.es/~fsancho/?e=131
 @#$#@#$#@
 default
 true
