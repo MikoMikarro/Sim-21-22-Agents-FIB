@@ -478,7 +478,7 @@ to-report A* [#Start #Goal #valid-map]
     let current #Goal
     set Final-Cost (precision [Cost-path] of #Goal 3)
     let rep (list current)
-    While [current != #Start]
+    While [current != #Start and current != nobody]
     [
       set current [father] of current ;zzz
       set rep fput current rep
