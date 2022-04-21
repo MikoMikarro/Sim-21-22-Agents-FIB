@@ -329,8 +329,8 @@ to get-cure
   set any-cured? true
   set changing? 0
   ask cures [ die ]
-
 end
+
 to wander
   move-to one-of neighbors with [block? = false]
 end
@@ -376,7 +376,7 @@ end
 to wall-birth  ;; patch procedure
     set block? true
     set pcolor grey
-    set real-color black
+    set real-color grey
 end
 
 ; Patch report to estimate the total expected cost of the path starting from
@@ -398,8 +398,6 @@ end
 ; Returns:
 ;   - If there is a path : list of the agents of the path.
 ;   - Otherwise          : false
-
-
 to-report A* [#Start #Goal #valid-map]
   ; clear all the information in the agents
   ask #valid-map
@@ -612,7 +610,7 @@ human-sight
 human-sight
 1
 10
-2.0
+4.0
 1
 1
 NIL
@@ -649,7 +647,7 @@ humans-initial-number
 humans-initial-number
 0
 30
-30.0
+8.0
 1
 1
 NIL
