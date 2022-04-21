@@ -793,7 +793,7 @@ El modelo simula las probabilidades que tienen los humanos de sobrevivir frente 
 - humans-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de humanos que habrá al inicio de la simulación.
 - zombies-initial-number: Deslizador que puede tener valores entre 0 y 30, con un aumento de 1. Indica el número de zombies que habrá al inicio de la simulación.
 - limits? : Interruptor que indica si hay o no borde exterior
-- safeRadious : Número entre 5 y 10 que indica a qué distancia del centro están los humanos
+- safeRadius : Número entre 5 y 10 que indica a qué distancia del centro están los humanos
 
 ## THINGS TO NOTICE
 
