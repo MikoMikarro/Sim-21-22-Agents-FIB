@@ -711,7 +711,11 @@ Si hay una gran cantidad de humanos es posible que NetLogo sea incapaz de proces
 
 ## EXTENDING THE MODEL
 
-Un posible caso donde los humanos puedan defenderse de los zombies con cierta probabilidad de cuando un zombie ataque a un humano, el zombie muera en lugar de que el el humano se convierta en zombie.
+- Un posible caso donde los humanos puedan defenderse de los zombies con cierta probabilidad de cuando un zombie ataque a un humano, el zombie muera en lugar de que el el humano se convierta en zombie.
+
+- Sería interesante que los humanos y los zombies dejaran rastro para hacer la búsqueda más interesane
+
+- Sería interesante que los humanos utilizaran algoritmos exploratorios en vez moverse de manera aleatoria
 
 ## NETLOGO FEATURES
 
